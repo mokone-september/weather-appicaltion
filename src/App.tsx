@@ -1,7 +1,16 @@
+import { Box, Typography } from "@mui/material";
+
 export default function App() {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <h1 className="text-4xl font-bold">Weather App</h1>
-    </div>
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      height="100vh"
+    >
+      <Typography variant="h3" fontWeight="bold">
+        Weather App
+      </Typography>
+    </Box>
   );
 }
