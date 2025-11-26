@@ -178,8 +178,8 @@ export default function App() {
               Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
             </Typography>
 
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} textAlign="center">
+            <Grid container spacing={2} alignItems="center" justifyContent="center">
+              <Grid item xs={12} sx={{ textAlign: "center" }}>
                 <Box
                   sx={{
                     display: "inline-flex",
@@ -198,7 +198,7 @@ export default function App() {
                 </Box>
               </Grid>
 
-              <Grid item xs={6} textAlign="center">
+              <Grid item xs={6} sx={{ textAlign: "center" }}>
                 <Typography variant="h3" sx={{ fontWeight: "bold" }}>
                   {weather.temperature}°C
                 </Typography>
@@ -207,21 +207,23 @@ export default function App() {
                 </Typography>
               </Grid>
 
-              <Grid item xs={6} textAlign="center">
-                <Typography variant="h6">{getWeatherDescription(weather.weathercode)}</Typography>
+              <Grid item xs={6} sx={{ textAlign: "center" }}>
+                <Typography variant="h6">
+                  {getWeatherDescription(weather.weathercode)}
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Conditions
                 </Typography>
               </Grid>
 
-              <Grid item xs={6} textAlign="center">
+              <Grid item xs={6} sx={{ textAlign: "center" }}>
                 <Typography>{weather.windspeed} km/h</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Wind Speed
                 </Typography>
               </Grid>
 
-              <Grid item xs={6} textAlign="center">
+              <Grid item xs={6} sx={{ textAlign: "center" }}>
                 <Typography>{weather.winddirection}°</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Wind Direction
