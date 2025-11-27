@@ -1,73 +1,120 @@
-# React + TypeScript + Vite
+🌦️ Weather App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple and responsive weather application built with React, TypeScript, Material UI (MUI), and Lucide Icons.
+The app fetches live weather data from Open-Meteo and displays conditions including temperature, wind speed, wind direction, and weather icons.
 
-Currently, two official plugins are available:
+🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🔎 Search weather by city
 
-## React Compiler
+🌤️ Dynamic weather icons (clear sky, rain, snow, thunder, drizzle, etc.)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+📍 Preloaded city list (e.g., Cape Town, New York, London, Tokyo…)
 
-## Expanding the ESLint configuration
+🎨 Fully responsive MUI layout
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+⚡ Fast TypeScript code with error handling
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+🌀 Loading spinner
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+🔔 Error alerts when city not found or API fails
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+🌡️ Automatic card background color (hot, cold, mild)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+🛠️ Tech Stack
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+React 18
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+TypeScript
+
+Material UI (MUI) v5
+
+Lucide React icons
+
+Open-Meteo API
+
+Vite (if you're using it)
+
+CSS / MUI SX styling
+
+📦 Installation
+npm install
+
+
+or
+
+yarn install
+
+
+or
+
+pnpm install
+
+▶️ Development Server
+npm run dev
+
+
+Then open:
+
+http://localhost:5173/
+
+🏗️ Build for Production
+npm run build
+
+🌍 Supported Cities
+
+The app includes coordinates for these cities:
+
+New York
+
+London
+
+Tokyo
+
+Cape Town
+
+Sydney
+
+Paris
+
+Berlin
+
+Moscow
+
+Delhi
+
+Beijing
+
+You can easily add more inside:
+
+const cityCoordinates = { ... }
+
+📡 API Used
+
+Weather data comes from:
+https://open-meteo.com/
+
+No API key required.
+
+📁 Project Structure
+src/
+ ├── App.tsx        # Main weather component
+ ├── main.tsx       # Entry point
+ ├── index.css
+ └── assets/
+
+🧩 Future Improvements (Optional)
+
+Auto-detect user location
+
+Hourly & weekly forecast charts
+
+Light/Dark theme
+
+Add search autocomplete
+
+Animated background depending on weather
+
+📝 License
+
+MIT License — free to use and modify.
