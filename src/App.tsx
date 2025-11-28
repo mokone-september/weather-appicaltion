@@ -1,13 +1,4 @@
-import { useState, type ReactElement } from "react";
-import {
-  Cloud,
-  Sun,
-  CloudRain,
-  CloudSnow,
-  CloudDrizzle,
-  Zap,
-  EyeOff,
-} from "lucide-react";
+import { useState } from "react";
 import {
   Box,
   TextField,
@@ -20,29 +11,31 @@ import {
   Alert,
 } from "@mui/material";
 
-// Weather code mapping with icons
-const weatherCodeMap: { [key: number]: { description: string; icon: ReactElement } } = {
-  0: { description: "Clear sky", icon: <Sun size={40} color="#FFB74D" /> },
-  1: { description: "Mainly clear", icon: <Sun size={40} color="#FFB74D" /> },
-  2: { description: "Partly cloudy", icon: <Cloud size={40} color="#90A4AE" /> },
-  3: { description: "Overcast", icon: <Cloud size={40} color="#78909C" /> },
-  45: { description: "Fog", icon: <EyeOff size={40} color="#BDBDBD" /> },
-  48: { description: "Depositing rime fog", icon: <EyeOff size={40} color="#BDBDBD" /> },
-  51: { description: "Light drizzle", icon: <CloudDrizzle size={40} color="#64B5F6" /> },
-  53: { description: "Moderate drizzle", icon: <CloudDrizzle size={40} color="#42A5F5" /> },
-  55: { description: "Dense drizzle", icon: <CloudDrizzle size={40} color="#2196F3" /> },
-  61: { description: "Slight rain", icon: <CloudRain size={40} color="#64B5F6" /> },
-  63: { description: "Moderate rain", icon: <CloudRain size={40} color="#42A5F5" /> },
-  65: { description: "Heavy rain", icon: <CloudRain size={40} color="#2196F3" /> },
-  71: { description: "Slight snow fall", icon: <CloudSnow size={40} color="#E3F2FD" /> },
-  73: { description: "Moderate snow fall", icon: <CloudSnow size={40} color="#BBDEFB" /> },
-  75: { description: "Heavy snow fall", icon: <CloudSnow size={40} color="#90CAF9" /> },
-  80: { description: "Slight rain showers", icon: <CloudRain size={40} color="#64B5F6" /> },
-  81: { description: "Moderate rain showers", icon: <CloudRain size={40} color="#42A5F5" /> },
-  82: { description: "Violent rain showers", icon: <CloudRain size={40} color="#2196F3" /> },
-  95: { description: "Thunderstorm", icon: <Zap size={40} color="#FFD54F" /> },
-  96: { description: "Thunderstorm with slight hail", icon: <Zap size={40} color="#FFB74D" /> },
-  99: { description: "Thunderstorm with heavy hail", icon: <Zap size={40} color="#FF9800" /> },
+// Weather code mapping with weathericons.io CSS classes
+const weatherCodeMap: { [key: number]: { description: string; iconClass: string } } = {
+  0: { description: "Clear sky", iconClass: "wi wi-day-sunny" },
+  1: { description: "Mainly clear", iconClass: "wi wi-day-sunny" },
+  2: { description: "Partly cloudy", iconClass: "wi wi-day-cloudy" },
+  3: { description: "Overcast", iconClass: "wi wi-cloudy" },
+  45: { description: "Fog", iconClass: "wi wi-fog" },
+  48: { description: "Depositing rime fog", iconClass: "wi wi-fog" },
+  51: { description: "Light drizzle", iconClass: "wi wi-sprinkle" },
+  53: { description: "Moderate drizzle", iconClass: "wi wi-sprinkle" },
+  55: { description: "Dense drizzle", iconClass: "wi wi-rain" },
+  61: { description: "Slight rain", iconClass: "wi wi-rain" },
+  63: { description: "Moderate rain", iconClass: "wi wi-rain" },
+  65: { description: "Heavy rain", iconClass: "wi wi-rain" },
+  71: { description: "Slight snow", iconClass: "wi wi-snow" },
+  73: { description: "Moderate snow", iconClass: "wi wi-snow" },
+  75: { description: "Heavy snow", iconClass: "wi wi-snow" },
+  80: { description: "Rain showers", iconClass: "wi wi-showers" },
+  81: { description: "Rain showers", iconClass: "wi wi-showers" },
+  82: { description: "Heavy showers", iconClass: "wi wi-showers" },
+  85: { description: "Snow showers", iconClass: "wi wi-snow" },
+  86: { description: "Heavy snow showers", iconClass: "wi wi-snow" },
+  95: { description: "Thunderstorm", iconClass: "wi wi-thunderstorm" },
+  96: { description: "Thunderstorm with hail", iconClass: "wi wi-storm-showers" },
+  99: { description: "Heavy thunderstorm", iconClass: "wi wi-storm-showers" },
 };
 
 export default function App() {
@@ -147,12 +140,17 @@ export default function App() {
           onKeyDown={(e) => e.key === "Enter" && getWeather()}
           disabled={loading}
           autoFocus
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "12px",
+            },
+          }}
         />
         <Button
           variant="contained"
           disabled={loading}
           onClick={getWeather}
-          sx={{ minWidth: 100 }}
+          sx={{ minWidth: 100, borderRadius: "12px" }}
         >
           {loading ? <CircularProgress size={24} /> : "Search"}
         </Button>
@@ -165,7 +163,7 @@ export default function App() {
       )}
 
       {weather && (
-        <Card sx={{ width: "100%", mt: 2, backgroundColor: getCardBackground() }}>
+        <Card sx={{ width: "100%", mt: 2, backgroundColor: getCardBackground(), borderRadius: "20px", boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
           <CardContent>
             <Typography variant="h5" textAlign="center" gutterBottom>
               Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
@@ -190,9 +188,11 @@ export default function App() {
                     height: 80,
                     borderRadius: "50%",
                     backgroundColor: "#E3F2FD",
+                    fontSize: 60,
+                    color: "#1976D2",
                   }}
                 >
-                  {weatherCodeMap[weather.weathercode]?.icon}
+                  <i className={weatherCodeMap[weather.weathercode]?.iconClass} />
                 </Box>
               </Box>
 
