@@ -66,20 +66,31 @@ export default function App() {
   };
 
   const getWeather = async () => {
-    if (!city.trim()) {
-      setError("Please enter a city name");
+    const trimmedCity = city.trim();
+    
+    if (!trimmedCity) {
+      setError("⚠️ Please enter a city name");
+      setWeather(null);
+      return;
+    }
+
+    if (trimmedCity.length < 2) {
+      setError("⚠️ City name must be at least 2 characters");
       return;
     }
 
     setLoading(true);
     setError("");
+    setWeather(null);
 
     try {
-      const cityLower = city.toLowerCase().trim();
+      const cityLower = trimmedCity.toLowerCase();
       const coordinates = cityCoordinates[cityLower];
 
       if (!coordinates) {
-        setError(`City "${city}" not found. Try: New York, London, Tokyo, etc.`);
+        setError(
+          `❌ City "${trimmedCity}" not found. Try: New York, London, Tokyo, Sydney, Cape Town, Paris, Berlin, Moscow, Delhi, or Beijing`
+        );
         setLoading(false);
         return;
       }
@@ -88,13 +99,30 @@ export default function App() {
         `https://api.open-meteo.com/v1/forecast?latitude=${coordinates.lat}&longitude=${coordinates.lon}&current_weather=true&temperature_unit=celsius&windspeed_unit=kmh`
       );
 
-      if (!res.ok) throw new Error("Failed to fetch weather data");
+      if (!res.ok) {
+        throw new Error(`HTTP Error: ${res.status}`);
+      }
 
       const data = await res.json();
+      
+      if (!data.current_weather) {
+        throw new Error("No weather data received");
+      }
+
       setWeather(data.current_weather);
+      setError("");
     } catch (err) {
-      setError("Failed to fetch weather data. Please try again.");
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      
+      if (errorMessage.includes("Failed to fetch") || errorMessage.includes("timeout")) {
+        setError("🌐 Network error. Please check your connection and try again.");
+      } else if (errorMessage.includes("HTTP Error")) {
+        setError("⚠️ Failed to fetch weather data from API. Please try again.");
+      } else {
+        setError("❌ An error occurred. Please try again later.");
+      }
+      
+      console.error("Weather fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -165,7 +193,7 @@ export default function App() {
       {weather && (
         <Card sx={{ width: "100%", mt: 2, backgroundColor: getCardBackground(), borderRadius: "20px", boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
           <CardContent>
-            <Typography variant="h5" textAlign="center" gutterBottom>
+            <Typography variant="h5" textAlign="center" gutterBottom sx={{ fontStyle: "italic", fontWeight: "bold" }}>
               Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
             </Typography>
 
