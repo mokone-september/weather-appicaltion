@@ -60,7 +60,6 @@ export default function App() {
     time?: string;
   };
 
-  // City coordinates
   const cityCoordinates: { [key: string]: { lat: number; lon: number } } = {
     "new york": { lat: 40.7128, lon: -74.006 },
     london: { lat: 51.5074, lon: -0.1278 },
@@ -109,18 +108,14 @@ export default function App() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") getWeather();
-  };
-
-  const getWeatherDescription = (code: number) =>
+  const getDescription = (code: number) =>
     weatherCodeMap[code]?.description ?? `Weather code: ${code}`;
 
-  const getCardBgColor = () => {
+  const getCardBackground = () => {
     if (!weather) return "#fff";
-    if (weather.temperature >= 30) return "#FFECB3"; // hot
-    if (weather.temperature <= 10) return "#BBDEFB"; // cold
-    return "#E0F7FA"; // mild
+    if (weather.temperature >= 30) return "#FFECB3";
+    if (weather.temperature <= 10) return "#BBDEFB";
+    return "#E0F7FA";
   };
 
   return (
@@ -136,7 +131,7 @@ export default function App() {
         py: 4,
       }}
     >
-      <Typography variant="h3" fontWeight="bold" textAlign="center">
+      <Typography variant="h3" textAlign="center" fontWeight="bold">
         Weather App
       </Typography>
 
@@ -150,15 +145,14 @@ export default function App() {
             setCity(e.target.value);
             if (!e.target.value.trim()) setWeather(null);
           }}
-          onKeyPress={handleKeyPress}
+          onKeyDown={(e) => e.key === "Enter" && getWeather()}
           disabled={loading}
           autoFocus
-          placeholder="e.g., New York, London, Tokyo"
         />
         <Button
           variant="contained"
-          onClick={getWeather}
           disabled={loading}
+          onClick={getWeather}
           sx={{ minWidth: 100 }}
         >
           {loading ? <CircularProgress size={24} /> : "Search"}
@@ -172,13 +166,14 @@ export default function App() {
       )}
 
       {weather && (
-        <Card sx={{ width: "100%", mt: 2, backgroundColor: getCardBgColor() }}>
+        <Card sx={{ width: "100%", mt: 2, backgroundColor: getCardBackground() }}>
           <CardContent>
-            <Typography variant="h5" gutterBottom textAlign="center">
+            <Typography variant="h5" textAlign="center" gutterBottom>
               Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
             </Typography>
 
-            <Grid container spacing={2} alignItems="center" justifyContent="center">
+            <Grid container spacing={2} justifyContent="center" alignItems="center">
+
               <Grid item xs={12} sx={{ textAlign: "center" }}>
                 <Box
                   sx={{
@@ -189,45 +184,32 @@ export default function App() {
                     height: 80,
                     borderRadius: "50%",
                     backgroundColor: "#E3F2FD",
-                    mx: "auto",
                   }}
                 >
-                  {weatherCodeMap[weather.weathercode]?.icon || (
-                    <Sun size={40} color="#FFB74D" />
-                  )}
+                  {weatherCodeMap[weather.weathercode]?.icon}
                 </Box>
               </Grid>
 
               <Grid item xs={6} sx={{ textAlign: "center" }}>
-                <Typography variant="h3" sx={{ fontWeight: "bold" }}>
+                <Typography variant="h3" fontWeight="bold">
                   {weather.temperature}°C
                 </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Temperature
-                </Typography>
+                <Typography color="text.secondary">Temperature</Typography>
               </Grid>
 
               <Grid item xs={6} sx={{ textAlign: "center" }}>
-                <Typography variant="h6">
-                  {getWeatherDescription(weather.weathercode)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Conditions
-                </Typography>
+                <Typography variant="h6">{getDescription(weather.weathercode)}</Typography>
+                <Typography color="text.secondary">Conditions</Typography>
               </Grid>
 
               <Grid item xs={6} sx={{ textAlign: "center" }}>
                 <Typography>{weather.windspeed} km/h</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Wind Speed
-                </Typography>
+                <Typography color="text.secondary">Wind Speed</Typography>
               </Grid>
 
               <Grid item xs={6} sx={{ textAlign: "center" }}>
                 <Typography>{weather.winddirection}°</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Wind Direction
-                </Typography>
+                <Typography color="text.secondary">Wind Direction</Typography>
               </Grid>
             </Grid>
           </CardContent>
