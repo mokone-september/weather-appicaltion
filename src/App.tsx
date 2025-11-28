@@ -1,4 +1,4 @@
-import React, { useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import {
   Cloud,
   Sun,
@@ -18,7 +18,6 @@ import {
   Container,
   CircularProgress,
   Alert,
-  Grid,
 } from "@mui/material";
 
 // Weather code mapping with icons
@@ -172,9 +171,16 @@ export default function App() {
               Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
             </Typography>
 
-            <Grid container spacing={2} justifyContent="center" alignItems="center">
-
-              <Grid item xs={12} sx={{ textAlign: "center" }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 2,
+                alignItems: "center",
+                justifyItems: "center",
+              }}
+            >
+              <Box sx={{ gridColumn: "1 / -1", textAlign: "center" }}>
                 <Box
                   sx={{
                     display: "inline-flex",
@@ -188,30 +194,30 @@ export default function App() {
                 >
                   {weatherCodeMap[weather.weathercode]?.icon}
                 </Box>
-              </Grid>
+              </Box>
 
-              <Grid item xs={6} sx={{ textAlign: "center" }}>
+              <Box sx={{ textAlign: "center" }}>
                 <Typography variant="h3" fontWeight="bold">
-                  {weather.temperature}°C
+                  {Math.round(weather.temperature)}°C
                 </Typography>
                 <Typography color="text.secondary">Temperature</Typography>
-              </Grid>
+              </Box>
 
-              <Grid item xs={6} sx={{ textAlign: "center" }}>
+              <Box sx={{ textAlign: "center" }}>
                 <Typography variant="h6">{getDescription(weather.weathercode)}</Typography>
                 <Typography color="text.secondary">Conditions</Typography>
-              </Grid>
+              </Box>
 
-              <Grid item xs={6} sx={{ textAlign: "center" }}>
-                <Typography>{weather.windspeed} km/h</Typography>
+              <Box sx={{ textAlign: "center" }}>
+                <Typography>{weather.windspeed.toFixed(1)} km/h</Typography>
                 <Typography color="text.secondary">Wind Speed</Typography>
-              </Grid>
+              </Box>
 
-              <Grid item xs={6} sx={{ textAlign: "center" }}>
-                <Typography>{weather.winddirection}°</Typography>
+              <Box sx={{ textAlign: "center" }}>
+                <Typography fontWeight="bold">{Math.round(weather.winddirection)}°</Typography>
                 <Typography color="text.secondary">Wind Direction</Typography>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       )}
