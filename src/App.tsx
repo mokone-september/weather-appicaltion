@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   TextField,
@@ -13,7 +13,9 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-// Weather code mapping with weathericons.io CSS classes
+// ----------------------------------------
+// Weather code mapping
+// ----------------------------------------
 const weatherCodeMap: { [key: number]: { description: string; iconClass: string } } = {
   0: { description: "Clear sky", iconClass: "wi wi-day-sunny" },
   1: { description: "Mainly clear", iconClass: "wi wi-day-sunny" },
@@ -40,7 +42,9 @@ const weatherCodeMap: { [key: number]: { description: string; iconClass: string 
   99: { description: "Heavy thunderstorm", iconClass: "wi wi-storm-showers" },
 };
 
-// City coordinate lookup
+// ----------------------------------------
+// Coordinates
+// ----------------------------------------
 const cityCoordinates: { [key: string]: { lat: number; lon: number } } = {
   "new york": { lat: 40.7128, lon: -74.006 },
   london: { lat: 51.5074, lon: -0.1278 },
@@ -54,23 +58,49 @@ const cityCoordinates: { [key: string]: { lat: number; lon: number } } = {
   beijing: { lat: 39.9042, lon: 116.4074 },
 };
 
+// ----------------------------------------
+// Weather type
+// ----------------------------------------
+interface WeatherData {
+  temperature: number;
+  windspeed: number;
+  winddirection: number;
+  weathercode: number;
+}
+
 export default function App() {
   const [city, setCity] = useState("");
-  const [weather, setWeather] = useState<any>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Autofocus search field
+  useEffect(() => {
+    document.getElementById("city-input")?.focus();
+  }, []);
+
+  // Load last city
+  useEffect(() => {
+    const last = localStorage.getItem("lastCity");
+    if (last) setCity(last);
+  }, []);
+
+  // Save last searched city
+  useEffect(() => {
+    if (weather) localStorage.setItem("lastCity", city);
+  }, [weather]);
 
   const getWeather = async () => {
     const trimmedCity = city.trim();
 
     if (!trimmedCity) {
-      setError("⚠️ Please enter a city name");
+      setError("Please enter a city name.");
       setWeather(null);
       return;
     }
 
     if (trimmedCity.length < 2) {
-      setError("⚠️ City name must be at least 2 characters");
+      setError("City name must be at least 2 characters.");
       return;
     }
 
@@ -84,7 +114,7 @@ export default function App() {
 
       if (!coordinates) {
         setError(
-          `❌ City "${trimmedCity}" not found. Try: New York, London, Tokyo, Sydney, Cape Town, Paris, Berlin, Moscow, Delhi, Beijing`
+          `City "${trimmedCity}" not found. Try: New York, London, Tokyo, Sydney, Cape Town, Paris, Berlin, Moscow, Delhi, Beijing`
         );
         setLoading(false);
         return;
@@ -97,67 +127,71 @@ export default function App() {
       if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
 
       const data = await res.json();
-      if (!data.current_weather) throw new Error("No weather data received");
+      if (!data.current_weather) throw new Error("No weather data");
 
       setWeather(data.current_weather);
-      setError("");
     } catch (err: any) {
-      if (err.message.includes("Failed to fetch")) {
-        setError("🌐 Network error. Check your connection.");
-      } else {
-        setError("❌ Something went wrong. Try again.");
-      }
+      setError("Unable to load weather details. Try again later.");
     } finally {
       setLoading(false);
     }
   };
 
-  const getDescription = (code: number) =>
-    weatherCodeMap[code]?.description ?? `Weather code: ${code}`;
+  const description = useMemo(
+    () => weather && weatherCodeMap[weather.weathercode]?.description,
+    [weather]
+  );
 
-  const getCardBackground = () => {
-    if (!weather) return "#fff";
-    if (weather.temperature >= 30) return "#FFECB3";
-    if (weather.temperature <= 10) return "#BBDEFB";
-    return "#E0F7FA";
-  };
+  const cityLabel =
+    city.trim().charAt(0).toUpperCase() + city.trim().slice(1);
+
+  // suggestions
+  const suggestions = Object.keys(cityCoordinates).filter((c) =>
+    c.startsWith(city.toLowerCase())
+  );
 
   return (
     <Container
-      maxWidth="md"
+      maxWidth="sm"
       sx={{
         minHeight: "100vh",
-        py: 5,
+        py: 6,
         display: "flex",
         flexDirection: "column",
         gap: 4,
+        transition: "background-image 0.8s",
       }}
     >
-      <Typography variant="h4" textAlign="center" fontWeight="bold">
-        Weather Forecast
+      <Typography variant="h4" fontWeight="bold" textAlign="center">
+      🌤️ Weather Forecast
       </Typography>
 
-      {/* SEARCH BAR CARD */}
+      {/* SEARCH BAR */}
       <Card
         sx={{
-          width: "100%",
-          borderRadius: "16px",
           p: 3,
-          boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+          borderRadius: "18px",
+          backdropFilter: "blur(12px)",
+          backgroundColor: "rgba(255,255,255,0.25)",
+          border: "1px solid rgba(255,255,255,0.3)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
         }}
       >
-        <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+        <Typography fontWeight={600} mb={1.5}>
           Search Location
         </Typography>
 
         <TextField
+          id="city-input"
           fullWidth
-          placeholder="Enter city, state or ZIP code..."
+          placeholder="Enter city..."
           value={city}
           onChange={(e) => setCity(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && getWeather()}
           disabled={loading}
-          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }}
+          sx={{
+            "& .MuiOutlinedInput-root": { borderRadius: "14px" },
+          }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -165,8 +199,8 @@ export default function App() {
                   onClick={getWeather}
                   disabled={loading}
                   sx={{
-                    background: "#e3f2fd",
-                    "&:hover": { background: "#bbdefb" },
+                    backgroundColor: "#e3f2fd",
+                    "&:hover": { backgroundColor: "#bbdefb" },
                   }}
                 >
                   {loading ? <CircularProgress size={20} /> : <SearchIcon />}
@@ -176,27 +210,32 @@ export default function App() {
           }}
         />
 
-        {/* Suggested Location */}
-        <Box
-          mt={2}
-          sx={{
-            p: 2,
-            borderRadius: "12px",
-            backgroundColor: "#f8f9fb",
-            cursor: "pointer",
-          }}
-          onClick={() => setCity("San Francisco")}
-        >
-          <Typography fontWeight="bold">San Francisco, CA</Typography>
-          <Typography fontSize="12px" color="text.secondary">
-            37.7749, -122.4194
-          </Typography>
-        </Box>
+        {/* Suggestions */}
+        {city.length > 0 && suggestions.length > 0 && (
+          <Box mt={2} sx={{ borderTop: "1px solid #eee" }}>
+            {suggestions.slice(0, 5).map((name) => (
+              <Box
+                key={name}
+                sx={{
+                  p: 1.5,
+                  cursor: "pointer",
+                  "&:hover": { backgroundColor: "#f0f0f0" },
+                }}
+                onClick={() => {
+                  setCity(name);
+                  getWeather();
+                }}
+              >
+                {name.toUpperCase()}
+              </Box>
+            ))}
+          </Box>
+        )}
       </Card>
 
       {/* ERRORS */}
       {error && (
-        <Alert severity="error" sx={{ width: "100%" }}>
+        <Alert severity="error" sx={{ borderRadius: "14px" }}>
           {error}
         </Alert>
       )}
@@ -205,71 +244,88 @@ export default function App() {
       {weather && (
         <Card
           sx={{
-            width: "100%",
-            mt: 2,
-            backgroundColor: getCardBackground(),
             borderRadius: "20px",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+            backgroundColor:
+              weather.temperature >= 30
+                ? "#FFECB3"
+                : weather.temperature <= 10
+                ? "#BBDEFB"
+                : "#E0F7FA",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+            animation: "fadeIn 0.6s ease",
+            "@keyframes fadeIn": {
+              from: { opacity: 0, transform: "translateY(10px)" },
+              to: { opacity: 1, transform: "translateY(0)" },
+            },
           }}
         >
           <CardContent>
             <Typography
-              variant="h5"
+              variant="h4"
+              fontWeight={600}
               textAlign="center"
               gutterBottom
-              sx={{ fontStyle: "italic", fontWeight: "bold" }}
             >
-              Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
+              {cityLabel}
             </Typography>
 
+            {/* Weather Icon */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  width: { xs: 100, sm: 130 },
+                  height: { xs: 100, sm: 130 },
+                  borderRadius: "50%",
+                  backgroundColor: "#E3F2FD",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: { xs: 70, sm: 90 },
+                  color: "#1976D2",
+                }}
+              >
+                <i className={weatherCodeMap[weather.weathercode]?.iconClass} />
+              </Box>
+            </Box>
+
+            {/* Weather Details */}
             <Box
               sx={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: 2,
-                justifyItems: "center",
-                alignItems: "center",
+                gap: 3,
+                textAlign: "center",
               }}
             >
-              <Box sx={{ gridColumn: "1 / -1", textAlign: "center" }}>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: 80,
-                    height: 80,
-                    borderRadius: "50%",
-                    backgroundColor: "#E3F2FD",
-                    fontSize: 60,
-                    color: "#1976D2",
-                  }}
-                >
-                  <i className={weatherCodeMap[weather.weathercode]?.iconClass} />
-                </Box>
-              </Box>
-
-              <Box textAlign="center">
-                <Typography variant="h3" fontWeight="bold">
+              <Box>
+                <Typography variant="h3" fontWeight="700">
                   {Math.round(weather.temperature)}°C
                 </Typography>
                 <Typography color="text.secondary">Temperature</Typography>
               </Box>
 
-              <Box textAlign="center">
-                <Typography variant="h6">
-                  {getDescription(weather.weathercode)}
+              <Box>
+                <Typography variant="h6" fontWeight={500}>
+                  {description}
                 </Typography>
                 <Typography color="text.secondary">Conditions</Typography>
               </Box>
 
-              <Box textAlign="center">
-                <Typography>{weather.windspeed.toFixed(1)} km/h</Typography>
+              <Box>
+                <Typography variant="h6">
+                  {weather.windspeed.toFixed(1)} km/h
+                </Typography>
                 <Typography color="text.secondary">Wind Speed</Typography>
               </Box>
 
-              <Box textAlign="center">
-                <Typography fontWeight="bold">
+              <Box>
+                <Typography variant="h6" fontWeight="600">
                   {Math.round(weather.winddirection)}°
                 </Typography>
                 <Typography color="text.secondary">Wind Direction</Typography>
