@@ -2,14 +2,16 @@ import { useState } from "react";
 import {
   Box,
   TextField,
-  Button,
+  IconButton,
   Card,
   CardContent,
   Typography,
   Container,
   CircularProgress,
   Alert,
+  InputAdornment,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 // Weather code mapping with weathericons.io CSS classes
 const weatherCodeMap: { [key: number]: { description: string; iconClass: string } } = {
@@ -38,36 +40,29 @@ const weatherCodeMap: { [key: number]: { description: string; iconClass: string 
   99: { description: "Heavy thunderstorm", iconClass: "wi wi-storm-showers" },
 };
 
+// City coordinate lookup
+const cityCoordinates: { [key: string]: { lat: number; lon: number } } = {
+  "new york": { lat: 40.7128, lon: -74.006 },
+  london: { lat: 51.5074, lon: -0.1278 },
+  tokyo: { lat: 35.6762, lon: 139.6503 },
+  sydney: { lat: -33.8688, lon: 151.2093 },
+  "cape town": { lat: -33.9249, lon: 18.4241 },
+  paris: { lat: 48.8566, lon: 2.3522 },
+  berlin: { lat: 52.52, lon: 13.405 },
+  moscow: { lat: 55.7558, lon: 37.6173 },
+  delhi: { lat: 28.7041, lon: 77.1025 },
+  beijing: { lat: 39.9042, lon: 116.4074 },
+};
+
 export default function App() {
   const [city, setCity] = useState("");
-  const [weather, setWeather] = useState<Weather | null>(null);
+  const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  type Weather = {
-    temperature: number;
-    windspeed: number;
-    winddirection: number;
-    weathercode: number;
-    time?: string;
-  };
-
-  const cityCoordinates: { [key: string]: { lat: number; lon: number } } = {
-    "new york": { lat: 40.7128, lon: -74.006 },
-    london: { lat: 51.5074, lon: -0.1278 },
-    tokyo: { lat: 35.6762, lon: 139.6503 },
-    sydney: { lat: -33.8688, lon: 151.2093 },
-    "cape town": { lat: -33.9249, lon: 18.4241 },
-    paris: { lat: 48.8566, lon: 2.3522 },
-    berlin: { lat: 52.52, lon: 13.405 },
-    moscow: { lat: 55.7558, lon: 37.6173 },
-    delhi: { lat: 28.7041, lon: 77.1025 },
-    beijing: { lat: 39.9042, lon: 116.4074 },
-  };
-
   const getWeather = async () => {
     const trimmedCity = city.trim();
-    
+
     if (!trimmedCity) {
       setError("⚠️ Please enter a city name");
       setWeather(null);
@@ -89,7 +84,7 @@ export default function App() {
 
       if (!coordinates) {
         setError(
-          `❌ City "${trimmedCity}" not found. Try: New York, London, Tokyo, Sydney, Cape Town, Paris, Berlin, Moscow, Delhi, or Beijing`
+          `❌ City "${trimmedCity}" not found. Try: New York, London, Tokyo, Sydney, Cape Town, Paris, Berlin, Moscow, Delhi, Beijing`
         );
         setLoading(false);
         return;
@@ -99,30 +94,19 @@ export default function App() {
         `https://api.open-meteo.com/v1/forecast?latitude=${coordinates.lat}&longitude=${coordinates.lon}&current_weather=true&temperature_unit=celsius&windspeed_unit=kmh`
       );
 
-      if (!res.ok) {
-        throw new Error(`HTTP Error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
 
       const data = await res.json();
-      
-      if (!data.current_weather) {
-        throw new Error("No weather data received");
-      }
+      if (!data.current_weather) throw new Error("No weather data received");
 
       setWeather(data.current_weather);
       setError("");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      
-      if (errorMessage.includes("Failed to fetch") || errorMessage.includes("timeout")) {
-        setError("🌐 Network error. Please check your connection and try again.");
-      } else if (errorMessage.includes("HTTP Error")) {
-        setError("⚠️ Failed to fetch weather data from API. Please try again.");
+    } catch (err: any) {
+      if (err.message.includes("Failed to fetch")) {
+        setError("🌐 Network error. Check your connection.");
       } else {
-        setError("❌ An error occurred. Please try again later.");
+        setError("❌ Something went wrong. Try again.");
       }
-      
-      console.error("Weather fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -140,60 +124,101 @@ export default function App() {
 
   return (
     <Container
-      maxWidth="sm"
+      maxWidth="md"
       sx={{
+        minHeight: "100vh",
+        py: 5,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        gap: 3,
-        py: 4,
+        gap: 4,
       }}
     >
-      <Typography variant="h3" textAlign="center" fontWeight="bold">
-        Weather App
+      <Typography variant="h4" textAlign="center" fontWeight="bold">
+        Weather Forecast
       </Typography>
 
-      <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
+      {/* SEARCH BAR CARD */}
+      <Card
+        sx={{
+          width: "100%",
+          borderRadius: "16px",
+          p: 3,
+          boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+          Search Location
+        </Typography>
+
         <TextField
           fullWidth
-          label="Enter city"
-          variant="outlined"
+          placeholder="Enter city, state or ZIP code..."
           value={city}
-          onChange={(e) => {
-            setCity(e.target.value);
-            if (!e.target.value.trim()) setWeather(null);
-          }}
+          onChange={(e) => setCity(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && getWeather()}
           disabled={loading}
-          autoFocus
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "12px",
-            },
+          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={getWeather}
+                  disabled={loading}
+                  sx={{
+                    background: "#e3f2fd",
+                    "&:hover": { background: "#bbdefb" },
+                  }}
+                >
+                  {loading ? <CircularProgress size={20} /> : <SearchIcon />}
+                </IconButton>
+              </InputAdornment>
+            ),
           }}
         />
-        <Button
-          variant="contained"
-          disabled={loading}
-          onClick={getWeather}
-          sx={{ minWidth: 100, borderRadius: "12px" }}
-        >
-          {loading ? <CircularProgress size={24} /> : "Search"}
-        </Button>
-      </Box>
 
+        {/* Suggested Location */}
+        <Box
+          mt={2}
+          sx={{
+            p: 2,
+            borderRadius: "12px",
+            backgroundColor: "#f8f9fb",
+            cursor: "pointer",
+          }}
+          onClick={() => setCity("San Francisco")}
+        >
+          <Typography fontWeight="bold">San Francisco, CA</Typography>
+          <Typography fontSize="12px" color="text.secondary">
+            37.7749, -122.4194
+          </Typography>
+        </Box>
+      </Card>
+
+      {/* ERRORS */}
       {error && (
         <Alert severity="error" sx={{ width: "100%" }}>
           {error}
         </Alert>
       )}
 
+      {/* WEATHER CARD */}
       {weather && (
-        <Card sx={{ width: "100%", mt: 2, backgroundColor: getCardBackground(), borderRadius: "20px", boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
+        <Card
+          sx={{
+            width: "100%",
+            mt: 2,
+            backgroundColor: getCardBackground(),
+            borderRadius: "20px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+          }}
+        >
           <CardContent>
-            <Typography variant="h5" textAlign="center" gutterBottom sx={{ fontStyle: "italic", fontWeight: "bold" }}>
+            <Typography
+              variant="h5"
+              textAlign="center"
+              gutterBottom
+              sx={{ fontStyle: "italic", fontWeight: "bold" }}
+            >
               Current Weather in {city.charAt(0).toUpperCase() + city.slice(1)}
             </Typography>
 
@@ -202,8 +227,8 @@ export default function App() {
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: 2,
-                alignItems: "center",
                 justifyItems: "center",
+                alignItems: "center",
               }}
             >
               <Box sx={{ gridColumn: "1 / -1", textAlign: "center" }}>
@@ -224,25 +249,29 @@ export default function App() {
                 </Box>
               </Box>
 
-              <Box sx={{ textAlign: "center" }}>
+              <Box textAlign="center">
                 <Typography variant="h3" fontWeight="bold">
                   {Math.round(weather.temperature)}°C
                 </Typography>
                 <Typography color="text.secondary">Temperature</Typography>
               </Box>
 
-              <Box sx={{ textAlign: "center" }}>
-                <Typography variant="h6">{getDescription(weather.weathercode)}</Typography>
+              <Box textAlign="center">
+                <Typography variant="h6">
+                  {getDescription(weather.weathercode)}
+                </Typography>
                 <Typography color="text.secondary">Conditions</Typography>
               </Box>
 
-              <Box sx={{ textAlign: "center" }}>
+              <Box textAlign="center">
                 <Typography>{weather.windspeed.toFixed(1)} km/h</Typography>
                 <Typography color="text.secondary">Wind Speed</Typography>
               </Box>
 
-              <Box sx={{ textAlign: "center" }}>
-                <Typography fontWeight="bold">{Math.round(weather.winddirection)}°</Typography>
+              <Box textAlign="center">
+                <Typography fontWeight="bold">
+                  {Math.round(weather.winddirection)}°
+                </Typography>
                 <Typography color="text.secondary">Wind Direction</Typography>
               </Box>
             </Box>
